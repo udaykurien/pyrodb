@@ -1,3 +1,6 @@
+import json
+import os
+
 class Field:
     def __init__(self, field_name:str, field_type:type) -> None:
         if not isinstance(field_name, str):
@@ -35,6 +38,15 @@ class Table:
         self._index = 0
         self.row_type = row_type
         self.rows = {}
+
+    def assign_parent_db(self, parent_db):
+        self.parent_db = parent_db
+        if not os.path.isdir(f"./Data/{parent_db}"):
+            os.mkdir(f"./Data/{parent_db}")
+
+    def _check_parent_db(self):
+        if not (hasattr(self, "parent_db") and self.parent_db):
+            raise RuntimeError("parent_db name unset. All tables need to be part of a db.")
 
     def add_row(self, row):
         if not isinstance(row, self.row_type):
@@ -78,3 +90,32 @@ class Table:
         Row.validate_kwargs(self.row_type, kwargs)
         results = self.find(**kwargs)
         print_each_line(results)
+
+    def save(self):
+        self._check_parent_db()
+        serializable_table = {}
+        file_path = f"./Data/{self.parent_db}/{self.row_type.__name__}.json"
+        for index, row in self.rows.items():
+            serializable_table[index] = row.__dict__
+        with open(file_path, 'w') as file:
+            json.dump(serializable_table, file)
+
+    def load(self):
+        self._check_parent_db()
+        file_path = f"./Data/{self.parent_db}/{self.row_type.__name__}.json"
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        for index, row in data.items():
+            self.rows[int(index)]=self.row_type(**row)
+            self._index = int(index)
+        self._index += 1
+
+class Database:
+    def __init__(self, db_name:str):
+        self.db_name = db_name
+        self.tables = {}
+
+    def add_table(self, table:Table):
+        self.tables[table.row_type.__name__] = table
+        self.__dict__.update({table.row_type.__name__ : table})
+        table.assign_parent_db(self.db_name)
