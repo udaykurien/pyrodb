@@ -1,4 +1,5 @@
 import json
+from logging import raiseExceptions
 import os
 
 class Field:
@@ -38,6 +39,7 @@ class Table:
         self._index = 0
         self.row_type = row_type
         self.rows = {}
+        self.lookup_fields = {}
 
     def assign_parent_db(self, parent_db):
         self.parent_db = parent_db
@@ -48,10 +50,30 @@ class Table:
         if not (hasattr(self, "parent_db") and self.parent_db):
             raise RuntimeError("parent_db name unset. All tables need to be part of a db.")
 
+    def set_lookup_fields(self, *args):
+        for field_name in args:
+            if field_name not in self.row_type.__dict__.keys():
+                raise NameError(f"field: {field_name} not in {self.row_type.__name__}.")
+            if field_name not in self.lookup_fields.keys():
+                self.lookup_fields[field_name] = {}
+
+    def index_rows(self, row_index):
+        row = self.rows[row_index]
+        for lookup_field in self.lookup_fields.keys():
+            if row.__dict__[lookup_field] not in self.lookup_fields[lookup_field].keys():
+                self.lookup_fields[lookup_field][row.__dict__[lookup_field]] = set()
+            self.lookup_fields[lookup_field][row.__dict__[lookup_field]].add(row_index)
+
+    def remove_old_index_entries(self, set_fields, index):
+        for field, value in self.rows[index].__dict__.items():
+            if field in self.lookup_fields and field in set_fields.keys():
+                self.lookup_fields[field][value].remove(index)
+
     def add_row(self, row):
         if not isinstance(row, self.row_type):
             raise TypeError(f"Expected row type {self.row_type.__name__}, got {type(row).__name__}.")
         self.rows[self._index]= row
+        self.index_rows(self._index)
         self._index += 1
 
     def find(self, **kwargs):
@@ -71,16 +93,23 @@ class Table:
             for key,val in results.items():
                 self.rows.pop(key)
 
-    def update(self, where:dict, set:dict):
+    def update(self, where:dict, set_fields:dict):
         Row.validate_kwargs(self.row_type, where)
-        Row.validate_kwargs(self.row_type, set)
+        Row.validate_kwargs(self.row_type, set_fields)
         results = self.find(**where)
-        for index, obj in results.items():
-            for field, value in set.items():
-                setattr(obj, field, value)
+        if(len(results) == 0):
+            print("No matches found.")
+        for index, row in results.items():
+            self.remove_old_index_entries(set_fields, index)
+            for field, value in set_fields.items():
+                setattr(row, field, value)
+            self.index_rows(index)
 
     def show(self, **kwargs):
         def print_each_line(rows):
+            if len(rows) == 0:
+                print("No matches found.")
+                return
             for index, row in rows.items():
                 f=f"{index}. {row}"
                 print(f)
@@ -108,6 +137,7 @@ class Table:
         for index, row in data.items():
             self.rows[int(index)]=self.row_type(**row)
             self._index = int(index)
+            self.index_rows(self._index)
         self._index += 1
 
 class Database:

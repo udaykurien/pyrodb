@@ -54,7 +54,7 @@ if (False):
         # user_table.find(name=123)
         user_table.find(nickname="Alice")
 
-if (True):
+if (False):
     class User(Row):
         name = Field("name", str)
         age = Field("age", int)
@@ -85,12 +85,40 @@ if (True):
     clients.User.add_row(u5)
     clients.User.add_row(u6)
 
-    user_table.save()
+    # user_table.save()
     # clients.User.save()
     # clients.User.show()
     # clients.User.delete(name='John', age=55)
     # clients.User.save()
+    #
+    clients.User.lookup_index("name", "email")
     clients.User.show()
 
 
     # clients.tables["User"].show()
+    #
+if (True):
+    class User(Row):
+        name = Field("name", str)
+        age = Field("age", int)
+        email = Field("email", str)
+
+    user_table = Table(User)
+    clients = Database('clients')
+    clients.add_table(user_table)
+    clients.User.set_lookup_fields("name", "email")
+    # clients.User.set_lookup_fields()
+    clients.User.load()
+    # clients.User.show()
+
+    u1 = User(name="Archie", age=27, email="archie@riverdale.com")
+    clients.User.add_row(u1)
+    # clients.User.show()
+    print("calling update now..")
+    clients.User.update(where={"name":"Alice", "email":"alice@email.com"},set_fields={"name":"Jane", "email":"jane@email.com"})
+
+    clients.User.show()
+
+    # print()
+
+    # clients.User.show(name="Alice9")
