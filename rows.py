@@ -64,9 +64,9 @@ class Table:
                 self.lookup_fields[lookup_field][row.__dict__[lookup_field]] = set()
             self.lookup_fields[lookup_field][row.__dict__[lookup_field]].add(row_index)
 
-    def remove_old_index_entries(self, set_fields, index):
+    def remove_old_index_entries(self, index):
         for field, value in self.rows[index].__dict__.items():
-            if field in self.lookup_fields and field in set_fields.keys():
+            if field in self.lookup_fields:
                 self.lookup_fields[field][value].remove(index)
 
     def add_row(self, row):
@@ -77,21 +77,31 @@ class Table:
         self._index += 1
 
     def find(self, **kwargs):
-        results = {}
+        result_rows = {}
+        result_indices = set(self.rows.keys()) # set result_indices to identity (all table indices) set for any set intersection
         Row.validate_kwargs(self.row_type, kwargs)
-        for key_item, val_item in self.rows.items():
-            match = []
-            for key_search, val_search in kwargs.items():
-                match.append(True) if val_search == getattr(val_item, key_search) else match.append(False)
-            if(all(match)):
-                results[key_item] = val_item
-        return results
+        indexed_fields = set(kwargs.keys()) & set(self.lookup_fields.keys()) #set intersection
+        unindexed_fields = set(kwargs.keys()) - set(self.lookup_fields.keys())
+        if (len(indexed_fields) != 0):
+            for indexed_field in indexed_fields:
+                result_indices = result_indices & self.lookup_fields[indexed_field].get(kwargs[indexed_field], set()) # Intersection with identity returns smaller set, subsequent intersections with last iteration results will whittle down results
+        if (len(unindexed_fields) != 0):
+            for unindexed_field in unindexed_fields:
+                if len(result_indices)== 0:
+                    break
+                for index in result_indices.copy(): # .copy to preven iterator chaning with base object as loop progresses
+                    if self.rows[index].__dict__[unindexed_field] != kwargs[unindexed_field]:
+                        result_indices.remove(index)
+        for result_index in result_indices:
+            result_rows[result_index] = self.rows[result_index]
+        return result_rows
 
     def delete(self, **kwargs):
         results = self.find(**kwargs)
         if len(results) != 0:
-            for key,val in results.items():
-                self.rows.pop(key)
+            for index,val in results.items():
+                self.remove_old_index_entries(index)
+                self.rows.pop(index)
 
     def update(self, where:dict, set_fields:dict):
         Row.validate_kwargs(self.row_type, where)
@@ -100,7 +110,7 @@ class Table:
         if(len(results) == 0):
             print("No matches found.")
         for index, row in results.items():
-            self.remove_old_index_entries(set_fields, index)
+            self.remove_old_index_entries(index)
             for field, value in set_fields.items():
                 setattr(row, field, value)
             self.index_rows(index)
