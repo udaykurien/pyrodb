@@ -114,10 +114,21 @@ if (True):
     u1 = User(name="Archie", age=27, email="archie@riverdale.com")
     clients.User.add_row(u1)
     # clients.User.show()
-    print("calling update now..")
-    clients.User.update(where={"name":"Alice", "email":"alice@email.com"},set_fields={"name":"Jane", "email":"jane@email.com"})
+    # clients.User.show()
+    print("---")
+    # print(clients.User.lookup_fields)
+    print("---")
+    # clients.User.update(where={"name":"Alice", "email":"alice@email.com"},set_fields={"name":"Jane", "email":"jane@email.com"})
 
-    clients.User.show()
+    # clients.User.delete(name="John", email='john@hotmail.com')
+
+    # clients.User.show()
+
+    clients.User.show(age=30)#, email="alice@email.com")
+    # clients.User.find()
+
+    print("---")
+    # clients.User.show()
 
     # print()
 
