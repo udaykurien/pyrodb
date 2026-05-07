@@ -1,4 +1,4 @@
-from rows import Field, Row, Table, Database
+from pyrodb.pyrodb import Field, Row, Table, Database
 
 if (False):
     field1 = Field("22", int)
@@ -125,7 +125,8 @@ if (True):
     # clients.User.show()
 
     clients.User.show(age=30)#, email="alice@email.com")
-    # clients.User.find()
+    print("---")
+    clients.User.show()
 
     print("---")
     # clients.User.show()

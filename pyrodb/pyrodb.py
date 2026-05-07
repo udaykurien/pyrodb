@@ -40,14 +40,13 @@ class Table:
         self.row_type = row_type
         self.rows = {}
         self.lookup_fields = {}
+        self.parent_db = None
 
     def assign_parent_db(self, parent_db):
         self.parent_db = parent_db
-        if not os.path.isdir(f"./Data/{parent_db}"):
-            os.mkdir(f"./Data/{parent_db}")
 
     def _check_parent_db(self):
-        if not (hasattr(self, "parent_db") and self.parent_db):
+        if not (self.parent_db):
             raise RuntimeError("parent_db name unset. All tables need to be part of a db.")
 
     def set_lookup_fields(self, *args):
@@ -133,7 +132,7 @@ class Table:
     def save(self):
         self._check_parent_db()
         serializable_table = {}
-        file_path = f"./Data/{self.parent_db}/{self.row_type.__name__}.json"
+        file_path = os.path.join(self.parent_db.dir, f"{self.row_type.__name__}.json")
         for index, row in self.rows.items():
             serializable_table[index] = row.__dict__
         with open(file_path, 'w') as file:
@@ -141,7 +140,7 @@ class Table:
 
     def load(self):
         self._check_parent_db()
-        file_path = f"./Data/{self.parent_db}/{self.row_type.__name__}.json"
+        file_path = os.path.join(self.parent_db.dir, f"{self.row_type.__name__}.json")
         with open(file_path, 'r') as file:
             data = json.load(file)
         for index, row in data.items():
@@ -151,11 +150,16 @@ class Table:
         self._index += 1
 
 class Database:
+    DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
+
     def __init__(self, db_name:str):
         self.db_name = db_name
         self.tables = {}
+        self.dir = os.path.join(Database.DATA_DIR, self.db_name)
+        if not os.path.isdir(self.dir):
+            os.mkdir(self.dir)
 
     def add_table(self, table:Table):
         self.tables[table.row_type.__name__] = table
         self.__dict__.update({table.row_type.__name__ : table})
-        table.assign_parent_db(self.db_name)
+        table.assign_parent_db(self)
