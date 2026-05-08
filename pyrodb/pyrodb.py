@@ -103,7 +103,7 @@ class Table:
                 self.rows.pop(index)
 
     def update(self, where:dict, set_fields:dict):
-        Row.validate_kwargs(self.row_type, where)
+        # Row.validate_kwargs(self.row_type, where)
         Row.validate_kwargs(self.row_type, set_fields)
         results = self.find(**where)
         if(len(results) == 0):
@@ -125,7 +125,7 @@ class Table:
         if len(kwargs) == 0:
             print_each_line(self.rows)
             return
-        Row.validate_kwargs(self.row_type, kwargs)
+        # Row.validate_kwargs(self.row_type, kwargs)
         results = self.find(**kwargs)
         print_each_line(results)
 
