@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import patch
+import os
+import json
 from pyrodb.pyrodb import Field, Row, Table, Database
 
 class TestTable(unittest.TestCase):
@@ -97,6 +99,17 @@ class TestTable(unittest.TestCase):
         for arg in mock_print.call_args_list:
             self.assertIn(name, arg[0][0])
 
+    def test_set_lookup_fields_happy_path(self):
+        lookup_field = "email"
+        self.user_table.set_lookup_fields(lookup_field)
+        self.assertIn(lookup_field, self.user_table.lookup_fields.keys())
+
+    def test_set_lookup_fields_error_path(self):
+        lookup_field = "does_not_exist"
+        with self.assertRaises(NameError):
+            self.user_table.set_lookup_fields(lookup_field)
+
+
 
 if __name__ == "__main__":
-    unittest.main()
+        unittest.main()
