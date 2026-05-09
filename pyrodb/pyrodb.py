@@ -125,7 +125,7 @@ class Table:
             print_each_line(self.rows)
             return
         results = self.find(**kwargs)
-        print_each_line(results)self.clients_test.User
+        print_each_line(results)
 
     def save(self):
         self._check_parent_db()
@@ -139,6 +139,12 @@ class Table:
     def load(self):
         self._check_parent_db()
         file_path = os.path.join(self.parent_db.dir, f"{self.row_type.__name__}.json")
+        # Empty old in-memory rows before loading new rows from file to prevent collisions and chaos.
+        self.rows = {}
+        # Empyty old indexed values as they beccome obsolete on loading rows from a file and can cause conflicts.
+        print(type(self.lookup_fields))
+        for lookup_field, lookup_value in self.lookup_fields.items():
+            self.lookup_fields[lookup_field] = {}
         with open(file_path, 'r') as file:
             data = json.load(file)
         for index, row in data.items():

@@ -159,9 +159,6 @@ class TestTablePersistence(unittest.TestCase):
 
     def test_load_table(self):
         self.helper_save_db()
-        # Empty in memory rows created in setup. If not done, test will pass even if load fails as in memory rows will be present from setup.
-        # Empty in memory rows only after saving table, or there will be no data to save.
-        self.clients_test.User.rows={}
         self.clients_test.User.load()
         self.assertEqual(self.clients_test.User.rows[3].name, "Kira")
 
