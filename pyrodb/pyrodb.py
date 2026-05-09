@@ -103,7 +103,6 @@ class Table:
                 self.rows.pop(index)
 
     def update(self, where:dict, set_fields:dict):
-        # Row.validate_kwargs(self.row_type, where)
         Row.validate_kwargs(self.row_type, set_fields)
         results = self.find(**where)
         if(len(results) == 0):
@@ -125,9 +124,8 @@ class Table:
         if len(kwargs) == 0:
             print_each_line(self.rows)
             return
-        # Row.validate_kwargs(self.row_type, kwargs)
         results = self.find(**kwargs)
-        print_each_line(results)
+        print_each_line(results)self.clients_test.User
 
     def save(self):
         self._check_parent_db()
@@ -160,6 +158,8 @@ class Database:
             os.mkdir(self.dir)
 
     def add_table(self, table:Table):
+        # Make registry of tables associated with db
         self.tables[table.row_type.__name__] = table
+        # Give client direct (dot) access to table from db
         self.__dict__.update({table.row_type.__name__ : table})
         table.assign_parent_db(self)
