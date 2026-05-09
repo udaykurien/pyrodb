@@ -109,6 +109,61 @@ class TestTable(unittest.TestCase):
         with self.assertRaises(NameError):
             self.user_table.set_lookup_fields(lookup_field)
 
+class TestTablePersistence(unittest.TestCase):
+    def setUp(self):
+        class User(Row):
+            name = Field("name", str)
+            age = Field("age", int)
+            email = Field("email", str)
+
+        self.user_table = Table(User)
+
+        self.clients_test = Database('clients_test')
+        self.clients_test.add_table(self.user_table)
+        self.clients_test.User.set_lookup_fields("name", "age")
+
+        u1 = User(name="Alice", age=30, email="alice@email.com")
+        u2 = User(name="Bob", age=22, email="bob@gmail.com")
+        u3 = User(name="Alice", age=45, email="alice_two@gmail.com")
+        u4 = User(name="Kira", age=30, email="kira@gmail.com")
+        u5 = User(name="Bob", age=42, email="bobby@gmail.com")
+        u6 = User(name = "John", age =55, email="john@hotmail.com")
+
+        self.clients_test.User.add_row(u1)
+        self.clients_test.User.add_row(u2)
+        self.clients_test.User.add_row(u3)
+        self.clients_test.User.add_row(u4)
+        self.clients_test.User.add_row(u5)
+        self.clients_test.User.add_row(u6)
+
+        self.DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
+        self.DB_DIR = os.path.join(self.DATA_DIR, self.clients_test.db_name)
+
+    def tearDown(self):
+        for key in self.clients_test.tables.keys():
+            file_path = os.path.join(self.DB_DIR,f"{key}.json")
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        os.rmdir(self.DB_DIR)
+
+    def helper_save_db(self):
+        self.clients_test.User.save()
+        self.file_path = os.path.join(self.DB_DIR,"User.json")
+
+    def test_save_db(self):
+        self.clients_test.User.save()
+        file_path = os.path.join(self.DB_DIR,"User.json")
+        with open(file_path, 'r') as file:
+            rows = json.load(file)
+        self.assertEqual(rows['3']['name'], "Kira")
+
+    def test_load_table(self):
+        self.helper_save_db()
+        # Empty in memory rows created in setup. If not done, test will pass even if load fails as in memory rows will be present from setup.
+        # Empty in memory rows only after saving table, or there will be no data to save.
+        self.clients_test.User.rows={}
+        self.clients_test.User.load()
+        self.assertEqual(self.clients_test.User.rows[3].name, "Kira")
 
 
 if __name__ == "__main__":
