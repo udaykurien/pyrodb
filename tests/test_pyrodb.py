@@ -162,6 +162,14 @@ class TestTablePersistence(unittest.TestCase):
         self.clients_test.User.load()
         self.assertEqual(self.clients_test.User.rows[3].name, "Kira")
 
+    def test_load_table_conflicts(self):
+        self.helper_save_db()
+        self.clients_test.User.rows = {}
+        User = self.clients_test.User.row_type
+        u7 = User(name="Ryan", age=27, email="ryan@gmail.com")
+        self.clients_test.User.add_row(u7)
+        self.clients_test.User.load()
+        self.assertEqual(len(self.clients_test.User.rows), 6)
 
 if __name__ == "__main__":
         unittest.main()
