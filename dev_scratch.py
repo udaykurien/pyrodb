@@ -1,4 +1,4 @@
-from pyrodb.pyrodb import Field, Foreign_Key, Row, Table, Database
+from pyrodb import Field, Row, Table, Database, Foreign_Key
 
 if (False):
     field1 = Field("22", int)

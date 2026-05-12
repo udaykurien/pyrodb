@@ -2,7 +2,10 @@ import unittest
 from unittest.mock import patch
 import os
 import json
-from pyrodb.pyrodb import Field, Row, Table, Database
+
+from pyrodb.schema import Field, Row, Foreign_Key
+from pyrodb.table import Table
+from pyrodb.database import  Database
 
 class TestTable(unittest.TestCase):
     def setUp(self):
