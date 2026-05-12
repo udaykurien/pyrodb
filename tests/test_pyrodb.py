@@ -14,7 +14,12 @@ class TestTable(unittest.TestCase):
             age = Field("age", int)
             email = Field("email", str)
 
+        class Animal(Row):
+            species = Field("species", str)
+            sound = Field("sound", str)
+
         self.user_table = Table(User)
+        self.animal_table = Table(Animal)
 
         self.clients_test = Database('clients')
         self.clients_test.add_table(self.user_table)
@@ -111,6 +116,46 @@ class TestTable(unittest.TestCase):
         lookup_field = "does_not_exist"
         with self.assertRaises(NameError):
             self.user_table.set_lookup_fields(lookup_field)
+
+    def test_is_foreign_key_table_present_happy_path(self):
+        class Order(Row):
+            item = Field("item", str)
+            quantity = Field("quantity", int)
+            user_fk = Foreign_Key(self.user_table)
+        order_table = Table(Order)
+        self.clients_test.add_table(order_table)
+        self.assertIn(Order.__name__, self.clients_test.tables.keys())
+
+    def test_is_foreign_key_table_present_sad_path(self):
+        class Order(Row):
+            item = Field("item", str)
+            quantity = Field("quantity", int)
+            user_fk = Foreign_Key(self.animal_table)
+        order_table = Table(Order)
+        with self.assertRaises(NameError):
+            self.clients_test.add_table(order_table)
+
+    def test_is_foreign_key_index_present_sad_path(self):
+        class Order(Row):
+            item = Field("item", str)
+            quantity = Field("quantity", int)
+            user_fk = Foreign_Key(self.user_table)
+        order_table = Table(Order)
+        o1 = Order(item="Chewing Gum", quantity=2, user_fk=99)
+        self.clients_test.add_table(order_table)
+        with self.assertRaises(ValueError):
+            self.clients_test.Order.add_row(o1)
+
+    def test_is_foreign_key_index_present_happy_path(self):
+        class Order(Row):
+            item = Field("item", str)
+            quantity = Field("quantity", int)
+            user_fk = Foreign_Key(self.user_table)
+        order_table = Table(Order)
+        o1 = Order(item="Chewing Gum", quantity=2, user_fk=5)
+        self.clients_test.add_table(order_table)
+        self.clients_test.Order.add_row(o1)
+        self.assertEqual(self.clients_test.Order.find(item="Chewing Gum")[0], o1)
 
 class TestTablePersistence(unittest.TestCase):
     def setUp(self):
