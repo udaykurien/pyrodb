@@ -11,6 +11,11 @@ class Field:
         self.field_name = field_name
         self.field_type = field_type
 
+class Foreign_Key(Field):
+    def __init__(self, referenced_table=None):
+        super().__init__(f"{referenced_table.row_type.__name__}_key",int )
+        self.referenced_table = referenced_table
+
 class Row:
     @staticmethod
     def validate_kwargs(row_type, data:dict):
@@ -68,9 +73,16 @@ class Table:
             if field in self.lookup_fields:
                 self.lookup_fields[field][value].remove(index)
 
+    def _check_does_foreign_key_exists(self, row):
+        for field_name, field_object in row.__class__.__dict__.items():
+           if (isinstance(field_object, Foreign_Key)):
+               if row.__dict__[field_name] not in field_object.referenced_table.rows.keys():
+                   raise ValueError(f"Index {row.__dict__[field_name]} not found in table {field_object.referenced_table.row_type.__name__}.")
+
     def add_row(self, row):
         if not isinstance(row, self.row_type):
             raise TypeError(f"Expected row type {self.row_type.__name__}, got {type(row).__name__}.")
+        self._check_does_foreign_key_exists(row)
         self.rows[self._index]= row
         self.index_rows(self._index)
         self._index += 1
@@ -142,7 +154,6 @@ class Table:
         # Empty old in-memory rows before loading new rows from file to prevent collisions and chaos.
         self.rows = {}
         # Empyty old indexed values as they beccome obsolete on loading rows from a file and can cause conflicts.
-        print(type(self.lookup_fields))
         for lookup_field, lookup_value in self.lookup_fields.items():
             self.lookup_fields[lookup_field] = {}
         with open(file_path, 'r') as file:
@@ -163,7 +174,14 @@ class Database:
         if not os.path.isdir(self.dir):
             os.mkdir(self.dir)
 
+    def does_foreign_key_table_exist(self, table):
+        for field_name, field_object in table.row_type.__dict__.items():
+            if isinstance(field_object, Foreign_Key):
+                if field_object.referenced_table not in self.tables.values():
+                    raise NameError(f"Table {field_object.referenced_table.row_type.__name__} not found in {self.db_name}")
+
     def add_table(self, table:Table):
+        self.does_foreign_key_table_exist(table)
         # Make registry of tables associated with db
         self.tables[table.row_type.__name__] = table
         # Give client direct (dot) access to table from db

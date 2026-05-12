@@ -1,4 +1,4 @@
-from pyrodb.pyrodb import Field, Row, Table, Database
+from pyrodb.pyrodb import Field, Foreign_Key, Row, Table, Database
 
 if (False):
     field1 = Field("22", int)
@@ -64,11 +64,11 @@ if (False):
     # user_table.load()
     # user_table.show()
 
-    clients = Database('clients')
-    clients.add_table(user_table)
+    store = Database('clients')
+    store.add_table(user_table)
 
     # clients.tables["User"].show()
-    clients.User.show()
+    store.User.show()
 
     print("-"*10)
     u1 = User(name="Alice", age=30, email="alice@email.com")
@@ -78,12 +78,12 @@ if (False):
     u5 = User(name="Bob", age=42, email="bobby@gmail.com")
     u6 = User(name = "John", age =55, email="john@hotmail.com")
 
-    clients.User.add_row(u1)
-    clients.User.add_row(u2)
-    clients.User.add_row(u3)
-    clients.User.add_row(u4)
-    clients.User.add_row(u5)
-    clients.User.add_row(u6)
+    store.User.add_row(u1)
+    store.User.add_row(u2)
+    store.User.add_row(u3)
+    store.User.add_row(u4)
+    store.User.add_row(u5)
+    store.User.add_row(u6)
 
     # user_table.save()
     # clients.User.save()
@@ -91,28 +91,28 @@ if (False):
     # clients.User.delete(name='John', age=55)
     # clients.User.save()
     #
-    clients.User.lookup_index("name", "email")
-    clients.User.show()
+    store.User.lookup_index("name", "email")
+    store.User.show()
 
 
     # clients.tables["User"].show()
     #
-if (True):
+if (False):
     class User(Row):
         name = Field("name", str)
         age = Field("age", int)
         email = Field("email", str)
 
     user_table = Table(User)
-    clients = Database('clients')
-    clients.add_table(user_table)
-    clients.User.set_lookup_fields("name", "email")
+    store = Database('clients')
+    store.add_table(user_table)
+    store.User.set_lookup_fields("name", "email")
     # clients.User.set_lookup_fields()
-    clients.User.load()
+    store.User.load()
     # clients.User.show()
 
     u1 = User(name="Archie", age=27, email="archie@riverdale.com")
-    clients.User.add_row(u1)
+    store.User.add_row(u1)
     # clients.User.show()
     # clients.User.show()
     print("---")
@@ -124,9 +124,9 @@ if (True):
 
     # clients.User.show()
 
-    clients.User.show(age=30)#, email="alice@email.com")
+    store.User.show(age=30)#, email="alice@email.com")
     print("---")
-    clients.User.show()
+    store.User.show()
 
     print("---")
     # clients.User.show()
@@ -134,3 +134,40 @@ if (True):
     # print()
 
     # clients.User.show(name="Alice9")
+
+if (True):
+    class User(Row):
+        name = Field("name", str)
+        age = Field("age", int)
+        email = Field("email", str)
+
+    user = Table(User)
+
+    class Cat(Row):
+        name = Field("product", str)
+        age = Field("age", int)
+
+    cat = Table(Cat)
+
+    class Order(Row):
+        product = Field("product", str)
+        cost = Field("cost", float)
+        fk = Foreign_Key(user)
+
+    store = Database('store')
+
+    store.add_table(user)
+    store.User.set_lookup_fields("name", "email")
+    store.User.load()
+
+    order = Table(Order)
+    store.add_table(order)
+
+    o1 = Order(product="Table", cost=25.5, fk=1)
+    store.Order.add_row(o1)
+
+    o2 = Order(product="Paint", cost=7.2, fk=99)
+    store.Order.add_row(o2)
+
+    store.User.show()
+    store.Order.show()
