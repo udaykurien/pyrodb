@@ -109,8 +109,14 @@ class Table:
         file_path = os.path.join(self.parent_db.dir, f"{self.row_type.__name__}.json")
         for index, row in self.rows.items():
             serializable_table[index] = row.__dict__
+        table = {
+            "metadata":{"lookup_fields":[]},
+            "rows": serializable_table
+        }
+        for lookup_field in self.lookup_fields.keys():
+            table["metadata"]["lookup_fields"].append(lookup_field)
         with open(file_path, 'w') as file:
-            json.dump(serializable_table, file)
+            json.dump(table, file)
 
     def load(self):
         self._check_parent_db()
@@ -122,7 +128,10 @@ class Table:
             self.lookup_fields[lookup_field] = {}
         with open(file_path, 'r') as file:
             data = json.load(file)
-        for index, row in data.items():
+            print(data)
+        for field in data["metadata"]["lookup_fields"]:
+            self.lookup_fields[field] = {}
+        for index, row in data["rows"].items():
             self.rows[int(index)]=self.row_type(**row)
             self._index = int(index)
             self.index_rows(self._index)

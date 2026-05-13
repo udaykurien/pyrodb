@@ -202,8 +202,8 @@ class TestTablePersistence(unittest.TestCase):
         self.clients_test.User.save()
         file_path = os.path.join(self.DB_DIR,"User.json")
         with open(file_path, 'r') as file:
-            rows = json.load(file)
-        self.assertEqual(rows['3']['name'], "Kira")
+            table = json.load(file)
+        self.assertEqual(table["rows"]['3']['name'], "Kira")
 
     def test_load_table(self):
         self.helper_save_db()
