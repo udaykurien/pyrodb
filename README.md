@@ -13,6 +13,20 @@ A lightweight in-memory database built in Python, designed around class-based ta
 
 ---
 
+## System Call Graphs
+
+### add_row
+
+```mermaid
+graph TD
+A[add_row] -> B[type_check: isinstance of row]
+A -> C[_check_does_foreign_key_exist]
+A -> D[rows[self._index] = row]
+A -> E[self.index_rows(self._index)]
+A -> F[increment _index]
+```
+---
+
 ## Defining a Schema
 
 ```python
