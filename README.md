@@ -16,15 +16,33 @@ A lightweight in-memory database built in Python, designed around class-based ta
 ## System Call Graphs
 
 ### add_row
-
 ```mermaid
 graph TD
-    A["add_row"] --> B["type_check: isinstance(row)"]
-    A --> C["_check_does_foreign_key_exist"]
-    A --> D["rows[self._index] = row"]
-    A --> E["self.index_rows(self._index)"]
-    A --> F["increment _index"]
+    A["add_row(row)"] --> B{"isinstance(row, row_type)?"}
+    B -- No --> C["raise TypeError"]
+    B -- Yes --> D["_check_does_foreign_key_exists(row)"]
+    D --> E["rows[self._index] = row"]
+    E --> F["index_rows(self._index)"]
+    F --> G["self._index += 1"]
 ```
+
+### find
+```mermaid
+graph TD
+    A["find(**kwargs)"] --> B["Row.validate_kwargs"]
+    B --> C["result_indices = all row keys"]
+    C --> D["split kwargs into indexed and unindexed fields"]
+    D --> E{"indexed fields?"}
+    E -- Yes --> F["intersect result_indices with lookup per field"]
+    E -- No --> G{"unindexed fields?"}
+    F --> G
+    G -- Yes --> H["loop: remove non-matching indices"]
+    G -- No --> I["build result_rows from result_indices"]
+    H --> I
+    I --> J["return result_rows"]
+  
+```
+
 ---
 
 ## Defining a Schema
