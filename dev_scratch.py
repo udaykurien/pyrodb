@@ -135,7 +135,7 @@ if (False):
 
     # clients.User.show(name="Alice9")
 
-if (True):
+if (False):
     class User(Row):
         name = Field("name", str)
         age = Field("age", int)
@@ -171,3 +171,79 @@ if (True):
 
     store.User.show()
     store.Order.show()
+
+if (False):
+    class User(Row):
+        name = Field("name", str)
+        age = Field("age", int)
+        email = Field("email", str)
+
+    user = Table(User)
+
+    class Order(Row):
+        product = Field("product", str)
+        cost = Field("cost", float)
+        fk = Foreign_Key(user)
+
+    order = Table(Order)
+
+    store = Database('store')
+    store.add_table(user)
+    store.User.set_lookup_fields("name", "email")
+    store.add_table(order)
+    store.Order.set_lookup_fields("product")
+
+    u1 = User(name="Alice", age=30, email="alice@email.com")
+    u2 = User(name="Bob", age=22, email="bob@gmail.com")
+    u3 = User(name="Alice", age=45, email="alice_two@gmail.com")
+    u4 = User(name="Kira", age=30, email="kira@gmail.com")
+    u5 = User(name="Bob", age=42, email="bobby@gmail.com")
+    u6 = User(name = "John", age =55, email="john@hotmail.com")
+
+    store.User.add_row(u1)
+    store.User.add_row(u2)
+    store.User.add_row(u3)
+    store.User.add_row(u4)
+    store.User.add_row(u5)
+    store.User.add_row(u6)
+
+    store.User.save()
+
+    o1 = Order(product="Table", cost=25.5, fk=1)
+    o2 = Order(product="Paint", cost=7.2, fk=4)
+
+    store.Order.add_row(o1)
+    store.Order.add_row(o2)
+
+    store.Order.save()
+
+    store.Order.load()
+
+    o3 = Order(product="Paint", cost=7.2, fk=99)
+    store.Order.add_row(o3)
+
+if (True):
+    if (True):
+        class User(Row):
+            name = Field("name", str)
+            age = Field("age", int)
+            email = Field("email", str)
+
+        user = Table(User)
+
+        class Order(Row):
+            product = Field("product", str)
+            cost = Field("cost", float)
+            fk = Foreign_Key(user)
+
+        order = Table(Order)
+
+        store = Database('store')
+        store.add_table(user)
+        store.add_table(order)
+
+        store.User.load()
+        store.Order.load()
+
+        o3 = Order(product="Paint", cost=7.2, fk=3)
+        store.Order.add_row(o3)

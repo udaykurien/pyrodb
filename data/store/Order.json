@@ -1,0 +1,1 @@
+{"metadata": {"lookup_fields": ["product"], "foreign_keys": {"fk": "User"}}, "rows": {"0": {"product": "Table", "cost": 25.5, "fk": 1}, "1": {"product": "Paint", "cost": 7.2, "fk": 4}}}

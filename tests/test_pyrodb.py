@@ -219,5 +219,14 @@ class TestTablePersistence(unittest.TestCase):
         self.clients_test.User.load()
         self.assertEqual(len(self.clients_test.User.rows), 6)
 
+    def test_persist_lookup_fields(self):
+        self.clients_test.User.set_lookup_fields("name", "age")
+        self.helper_save_db()
+        self.clients_test.User.load()
+        self.assertEqual(len(self.clients_test.User.lookup_fields), 2)
+        self.assertEqual(len(self.clients_test.User.lookup_fields["name"]), 4)
+        for idx in self.clients_test.User.lookup_fields["name"]["Alice"]:
+            self.assertEqual(self.clients_test.User.rows[idx].name, "Alice")
+
 if __name__ == "__main__":
         unittest.main()
