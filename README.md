@@ -13,38 +13,6 @@ A lightweight in-memory database built in Python, designed around class-based ta
 
 ---
 
-## System Call Graphs
-
-### add_row
-```mermaid
-graph TD
-    A["add_row(row)"] --> B{"isinstance(row, row_type)?"}
-    B -- No --> C["raise TypeError"]
-    B -- Yes --> D["_check_does_foreign_key_exists(row)"]
-    D --> E["rows[self._index] = row"]
-    E --> F["index_rows(self._index)"]
-    F --> G["self._index += 1"]
-```
-
-### find
-```mermaid
-graph TD
-    A["find(**kwargs)"] --> B["Row.validate_kwargs"]
-    B --> C["result_indices = all row keys"]
-    C --> D["split kwargs into indexed and unindexed fields"]
-    D --> E{"indexed fields?"}
-    E -- Yes --> F["intersect result_indices with lookup per field"]
-    E -- No --> G{"unindexed fields?"}
-    F --> G
-    G -- Yes --> H["loop: remove non-matching indices"]
-    G -- No --> I["build result_rows from result_indices"]
-    H --> I
-    I --> J["return result_rows"]
-  
-```
-
----
-
 ## Defining a Schema
 
 ```python
@@ -175,4 +143,52 @@ clients.add_table(furniture_table)
 
 clients.Furniture.add_row(Furniture(type="Table", length=22))
 clients.Furniture.show()
+```
+
+---
+
+## System Call Graphs
+
+### add_row
+```mermaid
+graph TD
+    A["add_row(row)"] --> B{"isinstance(row, row_type)?"}
+    B -- No --> C["raise TypeError"]
+    B -- Yes --> D["_check_does_foreign_key_exists(row)"]
+    D --> E["rows[self._index] = row"]
+    E --> F["index_rows(self._index)"]
+    F --> G["self._index += 1"]
+```
+
+---
+
+### find
+```mermaid
+graph TD
+    A["find(**kwargs)"] --> B["Row.validate_kwargs"]
+    B --> C["result_indices = all row keys"]
+    C --> D["split kwargs into indexed and unindexed fields"]
+    D --> E{"indexed fields?"}
+    E -- Yes --> F["intersect result_indices with lookup per field"]
+    E -- No --> G{"unindexed fields?"}
+    F --> G
+    G -- Yes --> H["loop: remove non-matching indices"]
+    G -- No --> I["build result_rows from result_indices"]
+    H --> I
+    I --> J["return result_rows"]
+  
+```
+
+---
+
+### delete
+```mermaid
+graph TD
+  A["delete(**kwargs)"] --> B["find(**kwargs)"]
+  B --> C{"results empty?"}
+  C -- Yes --> D["return"]
+  C -- No --> E["loop over results"]
+  E --> F["remove_old_index_entries(index)"]
+  F --> G["rows.pop(index)"]
+  G --> E
 ```
