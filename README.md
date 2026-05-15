@@ -1,4 +1,6 @@
-# pyrodb
+# Introduction
+
+## pyrodb
 
 A lightweight in-memory database built in Python, designed around class-based table and row definitions.
 
@@ -25,6 +27,8 @@ class User(Row):
 ```
 
 ---
+
+# Usage
 
 ## Creating a Database and Table
 
@@ -147,7 +151,9 @@ clients.Furniture.show()
 
 ---
 
-## System Call Graphs
+# System Call Graphs
+
+## Table
 
 ### add_row
 ```mermaid
@@ -191,4 +197,44 @@ graph TD
   E --> F["remove_old_index_entries(index)"]
   F --> G["rows.pop(index)"]
   G --> E
+```
+
+---
+
+### update
+```mermaid
+graph TD
+    A["update(where, set_fields)"] --> B["Row.validate_kwargs"]
+    B --> C["find(**where)"]
+    C --> D{"results empty?"}
+    D -- Yes --> E["print no matches found"]
+    D -- No --> F["loop over results"]
+    E --> F
+    F --> G["remove_old_index_entries(index)"]
+    G --> H["loop over set_fields"]
+    H --> I["setattr row field to new value"]
+    I --> H
+    H --> J["index_rows(index)"]
+    J --> F
+```
+
+---
+
+### show
+```mermaid
+graph TD
+    A["show(**kwargs)"] --> B{"kwargs empty?"}
+    B -- Yes --> C["print_each_line(self.rows)"]
+    B -- No --> D["find(**kwargs)"]
+    D --> E["print_each_line(results)"]
+    C --> F{"rows empty?"}
+    E --> F
+    F -- Yes --> G["print no matches found"]
+    F -- No --> H["loop: print index and row"]
+```
+
+---
+
+### save
+```mermaid
 ```
