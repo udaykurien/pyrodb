@@ -237,4 +237,56 @@ graph TD
 
 ### save
 ```mermaid
+graph TD
+    A["save()"] --> B["_check_parent_db()"]
+    B --> C["set file_path"]
+    C --> D["initialise table dict structure"]
+    D --> E["loop over rows"]
+    E --> F["add row.__dict__ to table['rows']"]
+    F --> E
+    E --> G["loop over lookup_fields"]
+    G --> H["append field to table['metadata']['lookup_fields']"]
+    H --> G
+    G --> I["loop over row_type schema fields"]
+    I --> J{"isinstance(field_object, Foreign_Key)?"}
+    J -- Yes --> K["add field to table['metadata']['foreign_keys']"]
+    K --> I
+    J -- No --> I
+    I --> L["json.dump table to file"]
+  
+```
+
+---
+
+### load
+```mermaid
+graph TD
+    A["load()"] --> B["_check_parent_db()"]
+    B --> C["set file_path"]
+    C --> D["clear self.rows"]
+    D --> E["clear all lookup_field index dicts"]
+    E --> F["open and parse json file"]
+    F --> G["loop over metadata lookup_fields"]
+    G --> H["initialise lookup_fields[field] to empty dict"]
+    H --> G
+    G --> I["loop over index, row in file rows"]
+    I --> J["add row to self.rows"]
+    J --> K["set _index to current index"]
+    K --> L["index_rows(_index)"]
+    L --> I
+    I --> M["increment _index by 1"]
+```
+
+---
+
+## Database
+
+### add_table
+```mermaid
+graph TD
+    A["add_table(table)"] --> B{"does_foreign_key_table_exist(table)?"}
+    B -- foreign key table missing --> C["raise NameError"]
+    B -- OK --> D["add table to self.tables dict"]
+    D --> E["add table reference to self.__dict__"]
+    E --> F["table.assign_parent_db(self)"]
 ```
