@@ -53,7 +53,7 @@ class Table:
 
     def find(self, **kwargs):
         result_rows = {}
-        result_indices = set(self.rows.keys()) # set result_indices to identity (all table indices) set for any set intersection
+        result_indices = set(self.rows.keys()) # set result_indices to identity set (all table indices) for any set intersection
         Row.validate_kwargs(self.row_type, kwargs)
         indexed_fields = set(kwargs.keys()) & set(self.lookup_fields.keys()) #set intersection
         unindexed_fields = set(kwargs.keys()) - set(self.lookup_fields.keys())
