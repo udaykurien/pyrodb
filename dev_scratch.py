@@ -247,3 +247,7 @@ if (True):
 
         o3 = Order(product="Paint", cost=7.2, fk=3)
         store.Order.add_row(o3)
+
+        store.begin()
+        store.commit()
+        store.rollback()

@@ -157,6 +157,27 @@ class TestTable(unittest.TestCase):
         self.clients_test.Order.add_row(o1)
         self.assertEqual(self.clients_test.Order.find(item="Chewing Gum")[0], o1)
 
+    def test_begin(self):
+        self.clients_test.begin()
+        self.assertEqual(self.clients_test.table_snapshots["User"]["rows"][0].name, "Alice")
+        self.assertEqual(self.clients_test.table_snapshots["User"]["lookup_fields"]["name"]["Alice"], {0,2})
+        self.assertEqual(self.clients_test.table_snapshots["User"]["index"], 6)
+
+    def test_rollback(self):
+        self.clients_test.begin()
+        self.clients_test.User.update(where={"name":"Alice", "age":30}, set_fields={"name":"XYZ"})
+        self.assertEqual(len(self.clients_test.User.find(name="XYZ")), 1)
+        self.clients_test.rollback()
+        self.assertEqual(len(self.clients_test.User.find(name="XYZ")), 0)
+
+    def test_commit(self):
+        self.clients_test.begin()
+        self.clients_test.User.update(where={"name":"Alice", "age":30}, set_fields={"name":"XYZ"})
+        self.assertEqual(len(self.clients_test.User.find(name="XYZ")), 1)
+        self.clients_test.commit()
+        self.assertEqual(len(self.clients_test.User.find(name="XYZ")), 1)
+        self.assertEqual(len(self.clients_test.table_snapshots), 0)
+
 class TestTablePersistence(unittest.TestCase):
     def setUp(self):
         class User(Row):

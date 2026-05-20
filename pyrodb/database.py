@@ -33,14 +33,11 @@ class Database:
     def begin(self):
         for key, value in self.__dict__.items():
             if isinstance(value, Table):
-                print(value)
-                print(value.__dict__)
                 self.table_snapshots[key] ={
                     "rows": deepcopy(value.rows),
                     "lookup_fields": deepcopy(value.lookup_fields),
                     "index": value._index
                 }
-            print(self.table_snapshots)
 
     def _does_snapshot_exist(self):
         if len(self.table_snapshots) == 0:
