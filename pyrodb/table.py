@@ -2,6 +2,7 @@ import json
 import os
 
 from pyrodb.schema import Row, Foreign_Key
+from pyrodb.op import Op
 
 class Table:
     def __init__(self, row_type) -> None:
@@ -59,14 +60,24 @@ class Table:
         unindexed_fields = set(kwargs.keys()) - set(self.lookup_fields.keys())
         if (len(indexed_fields) != 0):
             for indexed_field in indexed_fields:
-                result_indices = result_indices & self.lookup_fields[indexed_field].get(kwargs[indexed_field], set()) # Intersection with identity returns smaller set, subsequent intersections with last iteration results will whittle down results
+                if not isinstance(kwargs[indexed_field], Op):
+                    result_indices = result_indices & self.lookup_fields[indexed_field].get(kwargs[indexed_field], set()) # Intersection with identity returns smaller set, subsequent intersections with last iteration results will whittle down results
+                elif isinstance(kwargs[indexed_field], Op):
+                    for index in result_indices.copy():
+                        if not kwargs[indexed_field].op_function(self.rows[index].__dict__[indexed_field], kwargs[indexed_field].value):
+                            result_indices.remove(index)
         if (len(unindexed_fields) != 0):
             for unindexed_field in unindexed_fields:
                 if len(result_indices)== 0:
                     break
-                for index in result_indices.copy(): # .copy to preven iterator chaning with base object as loop progresses
-                    if self.rows[index].__dict__[unindexed_field] != kwargs[unindexed_field]:
-                        result_indices.remove(index)
+                for index in result_indices.copy(): # .copy to preven iterator chaining with base object as loop progresses
+                    if not isinstance(kwargs[unindexed_field], Op):
+                        if self.rows[index].__dict__[unindexed_field] != kwargs[unindexed_field]:
+                            result_indices.remove(index)
+                    elif isinstance(kwargs[unindexed_field], Op):
+                        if not kwargs[unindexed_field].op_function(self.rows[index].__dict__[unindexed_field], kwargs[unindexed_field].value):
+                            result_indices.remove(index)
+
         for result_index in result_indices:
             result_rows[result_index] = self.rows[result_index]
         return result_rows
