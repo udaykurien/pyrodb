@@ -1,4 +1,5 @@
-from pyrodb import Field, Row, Table, Database, Foreign_Key
+# from pyrodb import Field, Row, Table, Database, Foreign_Key
+from pyrodb import *
 
 if (False):
     field1 = Field("22", int)
@@ -222,7 +223,7 @@ if (False):
     o3 = Order(product="Paint", cost=7.2, fk=99)
     store.Order.add_row(o3)
 
-if (True):
+if (False):
     if (True):
         class User(Row):
             name = Field("name", str)
@@ -251,3 +252,58 @@ if (True):
         store.begin()
         store.commit()
         store.rollback()
+
+# Check operator functionality
+if (True):
+    if (True):
+        class User(Row):
+            name = Field("name", str)
+            age = Field("age", int)
+            email = Field("email", str)
+
+        user = Table(User)
+
+        class Order(Row):
+            product = Field("product", str)
+            cost = Field("cost", float)
+            fk = Foreign_Key(user)
+
+        order = Table(Order)
+
+        store = Database('store')
+        store.add_table(user)
+        store.add_table(order)
+
+        store.User.load()
+        store.Order.load()
+
+        o3 = Order(product="Paint", cost=7.2, fk=3)
+        store.Order.add_row(o3)
+
+        print("age=30")
+        store.User.show(age=30)
+        print("-"*30)
+
+        print("age=eq(30)")
+        store.User.show(age=eq(30))
+        print("-"*30)
+
+        print("age=gt(30)")
+        store.User.show(age=gt(30))
+        print("-"*30)
+
+        print("age=lt(30)")
+        store.User.show(age=lt(30))
+        print("-"*30)
+
+        print("age=lte(30)")
+        store.User.show(age=lte(30))
+        print("-"*30)
+
+        print("age=ne(30)")
+        store.User.show(age=ne(30))
+        print("-"*30)
+
+        print('name="Bob", age=ne(22)')
+        store.User.show(name="Bob", age=ne(22))
+        print("-"*30)
