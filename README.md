@@ -1,6 +1,6 @@
 # Introduction
 
-## pyrodb
+## 🔥 PyroDB
 
 A lightweight in-memory database built in Python, designed around class-based table and row definitions.
 
@@ -9,9 +9,11 @@ A lightweight in-memory database built in Python, designed around class-based ta
 ## Concepts
 
 - **Field** — defines a column name and its expected type
+- **Foreign Key** — links rows of one table to rows of another table
 - **Row** — a base class your data models inherit from; enforces field types on instantiation
 - **Table** — holds rows of a given type; supports add, find, update, delete, show, save, and load
 - **Database** — groups tables together and manages persistence paths
+- **Operations** — supports: =, >, <, >=, <=, !=, startswith, endswith on multiple fields
 
 ---
 
