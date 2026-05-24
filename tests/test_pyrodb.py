@@ -5,7 +5,8 @@ import json
 
 from pyrodb.schema import Field, Row, Foreign_Key
 from pyrodb.table import Table
-from pyrodb.database import  Database
+from pyrodb.database import Database
+from pyrodb.op import eq, ne, lt, lte, gt, gte, startswith, endswith
 
 class TestTable(unittest.TestCase):
     def setUp(self):
@@ -177,6 +178,79 @@ class TestTable(unittest.TestCase):
         self.clients_test.commit()
         self.assertEqual(len(self.clients_test.User.find(name="XYZ")), 1)
         self.assertEqual(len(self.clients_test.table_snapshots), 0)
+
+class TestOperators(unittest.TestCase):
+    def setUp(self):
+        class User(Row):
+            name = Field("name", str)
+            age = Field("age", int)
+            email = Field("email", str)
+            income = Field("income", int)
+
+        self.user_table = Table(User)
+
+        self.clients_test = Database('clients')
+        self.clients_test.add_table(self.user_table)
+        self.clients_test.User.set_lookup_fields("name", "age")
+
+        u1 = User(name="Alice", age=30, email="alice@email.com", income=30000)
+        u2 = User(name="Bob", age=22, email="bob@gmail.ca", income=45000)
+        u3 = User(name="Alice", age=45, email="alice_two@gmail.org", income=100000)
+        u4 = User(name="Kira", age=30, email="kira@gmail.eu", income=630000)
+        u5 = User(name="Bob", age=42, email="bobby@gmail.in", income=7000)
+        u6 = User(name = "John", age =55, email="john@hotmail.com", income=86000)
+
+        self.clients_test.User.add_row(u1)
+        self.clients_test.User.add_row(u2)
+        self.clients_test.User.add_row(u3)
+        self.clients_test.User.add_row(u4)
+        self.clients_test.User.add_row(u5)
+        self.clients_test.User.add_row(u6)
+
+    def test_eq_happy_path(self):
+        results = self.clients_test.User.find(age=eq(22))
+        self.assertEqual(len(results), 1)
+
+    def test_ne_happy_path(self):
+        results = self.clients_test.User.find(age=ne(22))
+        self.assertEqual(len(results), 5)
+
+    def test_gt_happy_path(self):
+        results = self.clients_test.User.find(age=gt(30))
+        self.assertEqual(len(results), 3)
+
+    def test_gte_happy_path(self):
+        results = self.clients_test.User.find(age=gte(30))
+        self.assertEqual(len(results), 5)
+
+    def test_lt_happy_path(self):
+        results = self.clients_test.User.find(age=lt(30))
+        self.assertEqual(len(results), 1)
+
+    def test_lte_happy_path(self):
+        results = self.clients_test.User.find(age=lte(30))
+        self.assertEqual(len(results), 3)
+
+    def test_startswith_happy_path(self):
+        results = self.clients_test.User.find(email=startswith('alice'))
+        self.assertEqual(len(results), 2)
+
+    def test_endswith_happy_path(self):
+        results = self.clients_test.User.find(email=endswith('com'))
+        self.assertEqual(len(results), 2)
+
+    def test_indexed_variable_path(self):
+        # name - Indexed, Op ; age - Indexed, int
+        results = self.clients_test.User.find(name=startswith('Alice'), age=45)
+        self.assertEqual(len(results), 1)
+
+    def test_mixed_variable_path(self):
+        # name - UnIndexed, str ; age - Indexed, int
+        results = self.clients_test.User.find(email='alice@email.com', age=30)
+        self.assertEqual(len(results), 1)
+        # name - UnIndexed, str ; age - Indexed, Op
+        results = self.clients_test.User.find(email='alice@email.com', age=gte(30))
+        self.assertEqual(len(results), 1)
 
 class TestTablePersistence(unittest.TestCase):
     def setUp(self):
