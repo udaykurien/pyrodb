@@ -92,6 +92,28 @@ results = clients.User.find(name="Alice", age=30)
 
 ---
 
+## Finding Rows With Operators
+
+`find` used with `operator function` allows ranged searches and returns matching `{index:row}`  
+   
+| Description  | Function |
+|--------------|----------|
+| Equal to | eq() |
+| Not equal to | ne() |
+| Greater than | gt() |
+| Greater than equal to | gte() |
+| Less than | lt() |
+| Less than equal to | lte() |
+| Starts with | startswith() |
+| Ends with | endswith() |
+
+```python
+results = clients.User.find(name=startswith("Bo"))
+results = clients.User.find(name="Alice", age=gte(30))
+```
+
+---
+
 ## Updating Rows
 
 ```python
